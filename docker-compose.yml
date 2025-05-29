@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - janusgraph
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase/serviceAccountKey.json
+      - FIREBASE_PROJECT_ID=your-firebase-project-id
+      - JANUSGRAPH_HOST=janusgraph
+      - JANUSGRAPH_PORT=8182
+
+  janusgraph:
+    extends:
+      file: ./janusgraph/docker-compose.yml
+      service: janusgraph
+
+volumes:
+  janus-data:
