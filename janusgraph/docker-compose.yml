@@ -1,12 +1,10 @@
-version: '3.7'
-
 services:
   janusgraph:
     image: janusgraph/janusgraph:latest
     ports:
-      - "8182:8182"   # Gremlin Server port
+      - "8182:8182"
     environment:
       - JANUS_PROPS_FILE=conf/janusgraph-inmemory.properties
     volumes:
       - janus-data:/var/lib/janusgraph
-
+    mem_limit: 2g      

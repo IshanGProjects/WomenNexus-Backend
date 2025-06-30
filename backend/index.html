@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Firebase Auth Testbench</title>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+</head>
+
+<body>
+    <h2>Firebase Auth Testbench</h2>
+
+    <div>
+        <h3>Register</h3>
+        <input id="reg-email" type="email" placeholder="Email" />
+        <input id="reg-password" type="password" placeholder="Password" />
+        <button onclick="register()">Register</button>
+    </div>
+
+    <div>
+        <h3>Login</h3>
+        <input id="login-email" type="email" placeholder="Email" />
+        <input id="login-password" type="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div>
+        <h3>Secure Request</h3>
+        <input id="uid" placeholder="UID for GET/PUT/DELETE" />
+        <textarea id="json" placeholder="PUT JSON body here"></textarea><br />
+        <button onclick="getUser()">GET User</button>
+        <button onclick="updateUser()">PUT User</button>
+        <button onclick="deleteUser()">DELETE User</button>
+    </div>
+
+    <pre id="output" style="margin-top: 20px; background: #eee; padding: 10px;"></pre>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfSVb40QM72BQQR1m9dxfkNBZdh7Pfr24",
+            authDomain: "womennexus-f6810.firebaseapp.com",
+            projectId: "womennexus-f6810",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        let currentToken = "";
+
+        const output = document.getElementById("output");
+
+        function log(msg) {
+            output.innerText = typeof msg === "string" ? msg : JSON.stringify(msg, null, 2);
+        }
+
+        window.register = async () => {
+            const email = document.getElementById("reg-email").value;
+            const password = document.getElementById("reg-password").value;
+
+            try {
+                const user = await createUserWithEmailAndPassword(auth, email, password);
+                const token = await user.user.getIdToken();
+                currentToken = token;
+                log({ uid: user.user.uid, token });
+            } catch (err) {
+                log(err.message);
+            }
+        };
+
+        window.login = async () => {
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+
+            try {
+                const user = await signInWithEmailAndPassword(auth, email, password);
+                const token = await user.user.getIdToken();
+                currentToken = token;
+                log({ uid: user.user.uid, token });
+            } catch (err) {
+                log(err.message);
+            }
+        };
+
+        async function sendRequest(method, uid, body = null) {
+            const url = `http://localhost:8080/user/${uid}`;
+            const headers = {
+                "Authorization": currentToken
+            };
+            if (body) headers["Content-Type"] = "application/json";
+
+            const res = await fetch(url, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : undefined
+            });
+
+            const data = await res.text();
+            log({ status: res.status, body: data });
+        }
+
+        window.getUser = () => {
+            const uid = document.getElementById("uid").value;
+            sendRequest("GET", uid);
+        };
+
+        window.updateUser = () => {
+            const uid = document.getElementById("uid").value;
+            const body = JSON.parse(document.getElementById("json").value || "{}");
+            sendRequest("PUT", uid, body);
+        };
+
+        window.deleteUser = () => {
+            const uid = document.getElementById("uid").value;
+            sendRequest("DELETE", uid);
+        };
+    </script>
+</body>
+
+</html>

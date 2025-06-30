@@ -9,14 +9,23 @@ services:
       - janusgraph
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/firebase/serviceAccountKey.json
-      - FIREBASE_PROJECT_ID=your-firebase-project-id
+      - FIREBASE_PROJECT_ID=womennexus-f6810
       - JANUSGRAPH_HOST=janusgraph
       - JANUSGRAPH_PORT=8182
+    volumes:
+      - ./backend/firebase/serviceAccountKey.json:/app/firebase/serviceAccountKey.json
 
   janusgraph:
-    extends:
-      file: ./janusgraph/docker-compose.yml
-      service: janusgraph
+    image: janusgraph/janusgraph:latest
+    ports:
+      - "8182:8182"
+    environment:
+      - JAVA_OPTIONS=-Xms512m -Xmx1024m
+      - JANUS_PROPS_FILE=conf/janusgraph-berkeleyje.properties
+    volumes:
+      - janus-data:/var/lib/janusgraph
+    restart: unless-stopped
+    mem_limit: 2g
 
 volumes:
   janus-data:
