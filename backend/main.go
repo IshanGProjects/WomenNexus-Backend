@@ -27,7 +27,6 @@ func main() {
 	r.HandleFunc("/user/{uid}", handlers.UpdateUser).Methods("PUT")
 	r.HandleFunc("/user/{uid}", handlers.DeleteUser).Methods("DELETE")
 
-	// ⚠️ IMPORTANT: wrap entire router with CORS handler
 	log.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", withCORS(r)))
 }
